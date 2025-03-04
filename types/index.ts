@@ -18,3 +18,9 @@ export interface SearchQuery {
     excerpt?: string;
     // other properties that Exa returns
   }
+
+  // Image generation types
+  export interface GeneratedImage {
+    url: string;
+    prompt: string;
+  }
