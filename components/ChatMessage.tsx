@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatMessage as ChatMessageType } from '@/lib/claude/client';
-import { SearchResult } from '@/types';
+import { SearchResult, GeneratedImage } from '@/types';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -20,6 +20,18 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         </div>
         <div className="whitespace-pre-wrap">{message.content}</div>
         
+        {/* Display generated images if available */}
+        {message.generatedImages && message.generatedImages.length > 0 && (
+          <div className="mt-4 border-t pt-3">
+            <div className="text-sm font-medium mb-2">Generated Images:</div>
+            <div className="space-y-3">
+              {message.generatedImages.map((image, index) => (
+                <GeneratedImageItem key={index} image={image} />
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* Display search results if available */}
         {message.searchResults && message.searchResults.length > 0 && (
           <div className="mt-4 border-t pt-3">
@@ -32,6 +44,19 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function GeneratedImageItem({ image }: { image: GeneratedImage }) {
+  return (
+    <div className="text-sm border border-gray-200 rounded p-2 bg-white">
+      <img 
+        src={image.url} 
+        alt={image.prompt}
+        className="w-full h-auto rounded"
+      />
+      <div className="mt-2 text-xs text-gray-600">{image.prompt}</div>
     </div>
   );
 }
