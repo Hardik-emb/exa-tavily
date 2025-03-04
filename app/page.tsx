@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import ClaudeTavilyInterface from '@/components/ClaudeTavilyInterface';
+import ClaudeToggleInterface from '@/components/ClaudeToggleInterface';
 
-type ActiveTab = 'claude-exa' | 'claude-tavily';
+type ActiveTab = 'claude-exa' | 'claude-tavily' | 'claude-toggle';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('claude-exa');
@@ -35,11 +36,22 @@ export default function Home() {
         >
           Claude with Tavily
         </button>
+        <button
+          className={`py-2 px-4 font-medium ${
+            activeTab === 'claude-toggle'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('claude-toggle')}
+        >
+          Claude with Toggle
+        </button>
       </div>
       
       {/* Content based on active tab */}
       {activeTab === 'claude-exa' && <ChatInterface />}
       {activeTab === 'claude-tavily' && <ClaudeTavilyInterface />}
+      {activeTab === 'claude-toggle' && <ClaudeToggleInterface />}
     </main>
   );
 }
