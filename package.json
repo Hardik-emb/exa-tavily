@@ -13,7 +13,10 @@
     "@types/uuid": "^10.0.0",
     "axios": "^1.8.1",
     "exa-js": "^1.4.10",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^146.0.0",
     "next": "15.2.0",
+    "next-auth": "^4.24.11",
     "openai": "^4.86.1",
     "rate-limiter-flexible": "^5.0.5",
     "react": "^19.0.0",
@@ -25,6 +28,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "open": "^10.1.0",
+    "server-destroy": "^1.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

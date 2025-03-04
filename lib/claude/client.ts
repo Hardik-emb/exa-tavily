@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ExaClient } from '@/lib/exa/client';
 import { SearchResult, GeneratedImage } from '@/types';
+import { CalendarEvent } from '@/lib/google/calendar-client';
 import { exaTools } from '@/lib/claude/tools';
 
 // Initialize the Anthropic client with API key from environment variables
@@ -16,6 +17,7 @@ export interface ChatMessage {
   id?: string;
   searchResults?: SearchResult[];
   generatedImages?: GeneratedImage[];
+  calendarEvents?: CalendarEvent[];
 }
 
 export class ClaudeClient {
