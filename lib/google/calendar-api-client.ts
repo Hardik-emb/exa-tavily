@@ -12,11 +12,8 @@ interface ExtendedSession extends Session {
 // Initialize the client with API keys from environment variables
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
-// The email associated with the refresh token
-const GOOGLE_EMAIL = process.env.GOOGLE_EMAIL || '';
 
-// Check if all required environment variables are set
+// Check if required environment variables are set
 if (!GOOGLE_CLIENT_ID) {
   console.error('Missing GOOGLE_CLIENT_ID environment variable');
 }
@@ -25,47 +22,22 @@ if (!GOOGLE_CLIENT_SECRET) {
   console.error('Missing GOOGLE_CLIENT_SECRET environment variable');
 }
 
-if (!GOOGLE_REFRESH_TOKEN) {
-  console.error('Missing GOOGLE_REFRESH_TOKEN environment variable');
-}
-
-// Create a singleton instance of the GoogleCalendarClient for the static refresh token
-let staticCalendarClient: GoogleCalendarClient | null = null;
-
 // Cache for session-based calendar clients
 const sessionCalendarClients = new Map<string, GoogleCalendarClient>();
 
 /**
- * Get a calendar client using the static refresh token from environment variables
- * This is a fallback and should be avoided in favor of session-based authentication
+ * Get a calendar client using static refresh token
+ * This method is completely removed and will throw an error if called
+ * @deprecated This method is no longer available. The application now exclusively uses session-based authentication.
  */
 export function getStaticCalendarClient(): GoogleCalendarClient {
-  if (!staticCalendarClient) {
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
-      throw new Error('Missing Google Calendar credentials. Please check your environment variables.');
-    }
-    
-    console.log('Creating calendar client with static refresh token');
-    
-    // If we have the email associated with the refresh token, use it as the calendar ID
-    const calendarId = GOOGLE_EMAIL ? GOOGLE_EMAIL : 'primary';
-    console.log(`Using calendar ID: ${calendarId}`);
-    
-    staticCalendarClient = new GoogleCalendarClient(
-      GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET,
-      GOOGLE_REFRESH_TOKEN,
-      undefined, // No access token for static client
-      calendarId
-    );
-  }
-  
-  return staticCalendarClient;
+  throw new Error('Static calendar client is no longer supported. The application now exclusively uses session-based authentication.');
 }
 
 /**
  * Get a calendar client using the user's session tokens
- * This is the preferred method as it ensures operations are performed on the user's calendar
+ * This is the only supported authentication method in the application
+ * It ensures operations are performed on the user's own calendar using their OAuth credentials
  * @param req Optional request object that might contain a session
  */
 export async function getSessionCalendarClient(req?: Request): Promise<GoogleCalendarClient> {
@@ -107,25 +79,29 @@ export async function getSessionCalendarClient(req?: Request): Promise<GoogleCal
       return sessionCalendarClients.get(sessionId)!;
     }
     
-    // Fallback to static client if no session is available
-    console.warn('No user session found, falling back to static calendar client');
-    return getStaticCalendarClient();
+    // Instead of falling back to static client, throw an error
+    throw new Error('Authentication required: Please sign in to access calendar features.');
   } catch (error) {
     console.error('Error getting session calendar client:', error);
     
-    // Fallback to static client
-    console.warn('Error with session, falling back to static calendar client');
-    return getStaticCalendarClient();
+    // Instead of falling back to static client, propagate the error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      throw error;
+    }
+    
+    throw new Error('Authentication required: Please sign in to access calendar features.');
   }
 }
 
 /**
- * Get the appropriate calendar client based on context
- * This is the main function that should be used by API routes
+ * Get a calendar client for the current user
+ * This is the main entry point that should be used by all API routes and services
+ * It always uses session-based authentication with the user's OAuth credentials
+ * 
+ * @param req Optional request object that might contain a session
+ * @returns A GoogleCalendarClient instance authenticated with the user's credentials
+ * @throws Error if the user is not authenticated
  */
-export function getCalendarClient(): GoogleCalendarClient {
-  // For now, we'll use the static client to avoid breaking existing code
-  // In a real-world scenario, we would want to use the session client
-  // but that would require making all the API routes async
-  return getStaticCalendarClient();
+export async function getCalendarClient(req?: Request): Promise<GoogleCalendarClient> {
+  return getSessionCalendarClient(req);
 }
