@@ -10,16 +10,9 @@ export async function GET(request: Request) {
     const days = parseInt(url.searchParams.get('days') || '7', 10);
     const maxResults = parseInt(url.searchParams.get('maxResults') || '10', 10);
     
-    // Try to get the session-based calendar client first
-    let calendarClient;
-    try {
-      calendarClient = await getSessionCalendarClient(request);
-      console.log('Using session-based calendar client for listing events');
-    } catch (error) {
-      console.warn('Failed to get session calendar client, falling back to static client:', error);
-      calendarClient = getCalendarClient();
-      console.log('Using static calendar client for listing events');
-    }
+    // Get the calendar client (now always session-based)
+    const calendarClient = await getCalendarClient(request);
+    console.log('Using session-based calendar client for listing events');
     
     // List events
     const events = await calendarClient.listEvents(days, maxResults);
@@ -31,6 +24,14 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Error listing calendar events:', error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     return NextResponse.json(
       { 
@@ -69,16 +70,9 @@ export async function POST(request: Request) {
       reminders: body.reminders
     };
     
-    // Try to get the session-based calendar client first
-    let calendarClient;
-    try {
-      calendarClient = await getSessionCalendarClient(request);
-      console.log('Using session-based calendar client for creating event');
-    } catch (error) {
-      console.warn('Failed to get session calendar client, falling back to static client:', error);
-      calendarClient = getCalendarClient();
-      console.log('Using static calendar client for creating event');
-    }
+    // Get the calendar client (now always session-based)
+    const calendarClient = await getCalendarClient(request);
+    console.log('Using session-based calendar client for creating event');
     
     // Create event
     const createdEvent = await calendarClient.createEvent(event);
@@ -99,6 +93,14 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error creating calendar event:', error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     return NextResponse.json(
       { 

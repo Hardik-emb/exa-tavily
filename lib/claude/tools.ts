@@ -75,13 +75,23 @@ export const calendarTools = [
   },
   {
     name: "update_calendar_event",
-    description: "Update an existing event in the user's Google Calendar. Requires the event ID and updated details.",
+    description: "Update an existing event in the user's Google Calendar. You can provide either the event ID directly or a description of the event to update.",
     input_schema: {
       type: "object" as const,
       properties: {
         event_id: {
           type: "string" as const,
-          description: "ID of the event to update"
+          description: "ID of the event to update (optional if description is provided)"
+        },
+        event_description: {
+          type: "string" as const,
+          description: "Description of the event to update (e.g., 'meeting tomorrow at 2pm', 'doctor appointment on Friday')"
+        },
+        match_criteria: {
+          type: "string" as const,
+          description: "Criteria to use when matching events by description: 'title' (match by title only), 'datetime' (match by date/time), 'all' (match all criteria)",
+          enum: ["title", "datetime", "all"],
+          default: "all"
         },
         summary: {
           type: "string" as const,
@@ -108,21 +118,31 @@ export const calendarTools = [
           description: "Updated time zone for the event"
         }
       },
-      required: ["event_id"]
+      required: []
     }
   },
   {
     name: "delete_calendar_event",
-    description: "Delete an event from the user's Google Calendar. Requires the event ID.",
+    description: "Delete an event from the user's Google Calendar. You can provide either the event ID directly or a description of the event to delete.",
     input_schema: {
       type: "object" as const,
       properties: {
         event_id: {
           type: "string" as const,
-          description: "ID of the event to delete"
+          description: "ID of the event to delete (optional if description is provided)"
+        },
+        description: {
+          type: "string" as const,
+          description: "Description of the event to delete (e.g., 'meeting tomorrow at 2pm', 'doctor appointment on Friday')"
+        },
+        match_criteria: {
+          type: "string" as const,
+          description: "Criteria to use when matching events by description: 'title' (match by title only), 'datetime' (match by date/time), 'all' (match all criteria)",
+          enum: ["title", "datetime", "all"],
+          default: "all"
         }
       },
-      required: ["event_id"]
+      required: []
     }
   }
 ];

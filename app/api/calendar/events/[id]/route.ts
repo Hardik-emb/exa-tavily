@@ -18,16 +18,9 @@ export async function GET(
       );
     }
     
-    // Try to get the session-based calendar client first
-    let calendarClient;
-    try {
-      calendarClient = await getSessionCalendarClient(request);
-      console.log('Using session-based calendar client for getting event');
-    } catch (error) {
-      console.warn('Failed to get session calendar client, falling back to static client:', error);
-      calendarClient = getCalendarClient();
-      console.log('Using static calendar client for getting event');
-    }
+    // Get the calendar client (now always session-based)
+    const calendarClient = await getCalendarClient(request);
+    console.log('Using session-based calendar client for getting event');
     
     // List events and find the specific one
     const events = await calendarClient.listEvents(30, 100); // Look ahead 30 days with a larger limit
@@ -44,6 +37,14 @@ export async function GET(
     return NextResponse.json({ success: true, data: event });
   } catch (error) {
     console.error('Error getting calendar event:', error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     return NextResponse.json(
       { 
@@ -95,16 +96,9 @@ export async function PUT(
       reminders: body.reminders
     };
     
-    // Try to get the session-based calendar client first
-    let calendarClient;
-    try {
-      calendarClient = await getSessionCalendarClient(request);
-      console.log('Using session-based calendar client for updating event');
-    } catch (error) {
-      console.warn('Failed to get session calendar client, falling back to static client:', error);
-      calendarClient = getCalendarClient();
-      console.log('Using static calendar client for updating event');
-    }
+    // Get the calendar client (now always session-based)
+    const calendarClient = await getCalendarClient(request);
+    console.log('Using session-based calendar client for updating event');
     
     // Update event
     const updatedEvent = await calendarClient.updateEvent(eventId, event);
@@ -122,6 +116,14 @@ export async function PUT(
     return NextResponse.json({ success: true, data: updatedEvent });
   } catch (error) {
     console.error('Error updating calendar event:', error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     return NextResponse.json(
       { 
@@ -149,16 +151,9 @@ export async function DELETE(
       );
     }
     
-    // Try to get the session-based calendar client first
-    let calendarClient;
-    try {
-      calendarClient = await getSessionCalendarClient(request);
-      console.log('Using session-based calendar client for deleting event');
-    } catch (error) {
-      console.warn('Failed to get session calendar client, falling back to static client:', error);
-      calendarClient = getCalendarClient();
-      console.log('Using static calendar client for deleting event');
-    }
+    // Get the calendar client (now always session-based)
+    const calendarClient = await getCalendarClient(request);
+    console.log('Using session-based calendar client for deleting event');
     
     // Delete event
     await calendarClient.deleteEvent(eventId);
@@ -176,6 +171,14 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting calendar event:', error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
     return NextResponse.json(
       { 

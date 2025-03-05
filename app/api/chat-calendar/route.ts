@@ -21,13 +21,13 @@ const claudeCalendarClient = new ClaudeCalendarClient(CLAUDE_API_KEY || '');
 
 export async function POST(request: Request) {
   try {
-    // Check if the user is authenticated
+    // Check if the user is authenticated with the required tokens
     const session = await getServerSession(authOptions) as ExtendedSession | null;
     
-    if (!session) {
-      console.error('User not authenticated');
+    if (!session || !session.refreshToken) {
+      console.error('User not authenticated or missing refresh token');
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'Authentication required: Please sign in with your Google account to access calendar features' },
         { status: 401 }
       );
     }
